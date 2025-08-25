@@ -1,0 +1,28 @@
+# Server port (not used, but good practice)
+server:
+  port: 8084
+
+# Spring application name
+spring:
+  application:
+    name: computation-engine
+
+  kafka:
+    # This section is for the new Kafka Streams application
+    streams:
+      # This MUST be a unique ID for your streams application
+      application-id: synapse-computation-engine-v1
+      # The address of the Kafka broker
+      bootstrap-servers: localhost:9093
+      # Default settings for reading/writing data keys and values
+      properties:
+        default.key.serde: org.apache.kafka.common.serialization.Serdes$StringSerde
+        default.value.serde: org.springframework.kafka.support.serializer.JsonSerde
+
+    # This section is for the regular consumer/producer properties
+    consumer:
+      group-id: computation-engine-group
+      auto-offset-reset: earliest
+      properties:
+        # We still need to configure the trusted packages for the JsonSerde
+        spring.json.trusted.packages: "com.synapse.computationengine.model,com.synapse.marketdataingestor.model"

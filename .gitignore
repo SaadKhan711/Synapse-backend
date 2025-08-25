@@ -1,0 +1,27 @@
+# Build artifacts and compiled code
+target/
+*.jar
+*.war
+*.ear
+
+# Maven
+.mvn/
+!.mvn/wrapper/maven-wrapper.jar
+
+# IDE configuration files
+.idea/
+*.iml
+*.ipr
+*.iws
+.classpath
+.project
+.settings/
+.vscode/
+
+# Log files
+*.log
+logs/
+
+# Operating System files
+.DS_Store
+Thumbs.db

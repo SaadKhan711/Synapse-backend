@@ -1,0 +1,27 @@
+server:
+  port: 8081
+spring:
+  application:
+    name: model-service
+  datasource:
+    # Use the Docker service name 'postgres' instead of 'localhost'
+    url: jdbc:postgresql://postgres:5432/synapse_db
+    username: user
+    password: password
+  jpa:
+    hibernate:
+      ddl-auto: update
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Use the Docker service name 'keycloak' instead of 'localhost'
+          issuer-uri: http://keycloak:8080/realms/synapse
+  kafka:
+    producer:
+      # Use the Docker service name 'kafka' instead of 'localhost'
+      bootstrap-servers: kafka:9092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false

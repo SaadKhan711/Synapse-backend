@@ -1,0 +1,103 @@
+# This file defines all services for the Synapse backend.
+# The 'version' attribute is obsolete and has been removed for modern Docker Compose.
+services:
+  # --- Infrastructure Services ---
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.3.2
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:7.3.2
+    container_name: kafka
+    ports:
+      - "9093:9093"
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+
+  postgres:
+    image: postgres:14-alpine
+    container_name: synapse-postgres
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: synapse_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:22.0
+    container_name: synapse-keycloak
+    command: start-dev
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./keycloak-data:/opt/keycloak/data
+
+  # --- Application Microservices ---
+  model-service:
+    build: ./model-service # Tells Docker to build the image from the 'model-service' folder
+    container_name: model-service
+    ports:
+      - "8081:8081"
+    depends_on: # Ensures this service starts after its dependencies are ready
+      - postgres
+      - keycloak
+      - kafka
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "9000:9000"
+    depends_on:
+      - model-service
+
+  audit-service:
+    build: ./audit-service
+    container_name: audit-service
+    depends_on:
+      - kafka
+
+  market-data-ingestor:
+    build: ./market-data-ingestor
+    container_name: market-data-ingestor
+    depends_on:
+      - kafka
+
+  computation-engine:
+    build: ./computation-engine
+    container_name: computation-engine
+    depends_on:
+      - kafka
+
+  trading-engine:
+    build: ./trading-engine
+    container_name: trading-engine
+    depends_on:
+      - kafka
+
+  collaboration-service:
+    build: ./collaboration-service
+    container_name: collaboration-service
+    ports:
+      - "8086:8086"
+    depends_on:
+      - kafka
+
+volumes:
+  postgres-data:

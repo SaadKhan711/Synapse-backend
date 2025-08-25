@@ -1,0 +1,28 @@
+server:
+  port: 9000
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "http://localhost:5173" # The frontend is still on localhost
+            allowedMethods:
+              - GET
+              - POST
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
+      routes:
+        - id: model-service-route
+          # Use the Docker service name 'model-service' instead of 'localhost'
+          uri: http://model-service:8081
+          predicates:
+            - Path=/api/models/**
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://keycloak:8080/realms/synapse

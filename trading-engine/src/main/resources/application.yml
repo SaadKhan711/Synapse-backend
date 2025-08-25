@@ -1,0 +1,16 @@
+server:
+  port: 8085
+spring:
+  application:
+    name: trading-engine
+  kafka:
+    consumer:
+      bootstrap-servers: kafka:9092
+      group-id: trading-engine-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.use.type.headers: false
+        spring.json.value.default.type: "com.synapse.tradingengine.model.TradingSignal"
+        spring.json.trusted.packages: "com.synapse.tradingengine.model,com.synapse.computationengine.model"

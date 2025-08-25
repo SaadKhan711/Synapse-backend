@@ -1,0 +1,22 @@
+# Server port (we won't use it, but it's good practice to set it)
+server:
+  port: 8083
+
+# Spring application name
+spring:
+  application:
+    name: market-data-ingestor
+
+  # Kafka producer configuration
+  kafka:
+    producer:
+      # Use the address accessible from your computer (the host)
+      bootstrap-servers: localhost:9093
+      # The key will be the stock symbol (e.g., "SYN")
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      # The value will be the full StockTick object, serialized to JSON
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        # !! --- THIS IS THE FIX --- !!
+        # This tells the serializer NOT to add the problematic Java type headers to the message.
+        spring.json.add.type.headers: false
